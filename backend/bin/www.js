@@ -1,8 +1,14 @@
-require('dotenv').config();
 const app = require('../app');
 
+const config = require('../config');
+const port = config.get('web.port');
+
 //啟動 Server
-const port = Number(process.env.PORT) || 3000;
 app.listen(port, () => {
-  console.log(`app listening on port ${port}`)
+  try {
+    console.log(`app listening on port ${port}`);
+  } catch (error) {
+    console.error(`something went wrong`, error);
+    process.exit(1);
+  }
 })
