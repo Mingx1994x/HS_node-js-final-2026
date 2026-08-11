@@ -1,5 +1,7 @@
 const { DataSource } = require("typeorm");
+
 const config = require("../config");
+const Skill = require("../entities/skills.entity");
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -8,7 +10,7 @@ const AppDataSource = new DataSource({
   username: config.get('db.username'),
   password: config.get('db.password'),
   database: config.get('db.database'),
-  entities: [ /* 你的 Entity */],
+  entities: [Skill],
   synchronize: config.get('db.synchronize') === 'true',
   ssl: config.get('db.ssl') === 'true'
 });
