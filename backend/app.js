@@ -14,7 +14,7 @@ app.get('/healthcheck', async (req, res) => {
     res.send('OK')
   } catch (error) {
     console.error(error);
-    res.send('server is not working');
+    res.status(500).send('server is not working');
   }
 })
 
