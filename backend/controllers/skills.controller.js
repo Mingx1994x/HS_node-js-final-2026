@@ -14,12 +14,8 @@ module.exports = {
   },
   createSkill: async (req, res, next) => {
     const { name } = req.body;
-
-    if (!name || typeof name !== 'string') {
-      return next(createHttpError(400, '欄位未填寫正確'));
-    }
-
     const isExistSkill = await skillRepository.findOneBy({ name });
+
     if (isExistSkill) {
       return next(createHttpError(409, '資料重複'));
     }
