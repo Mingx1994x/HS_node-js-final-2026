@@ -14,12 +14,8 @@ module.exports = {
   },
   createSkill: async (req, res, next) => {
     const { name } = req.body;
-
-    if (!name || typeof name !== 'string') {
-      return next(createHttpError(400, '欄位未填寫正確'));
-    }
-
     const isExistSkill = await skillRepository.findOneBy({ name });
+
     if (isExistSkill) {
       return next(createHttpError(409, '資料重複'));
     }
@@ -31,7 +27,7 @@ module.exports = {
     })
   },
   deleteSkill: async (req, res, next) => {
-    const { skillId } = req.params;
+    const { id: skillId } = req.params;
     const result = await skillRepository.delete(skillId);
     if (result.affected === 0) {
       return next(createHttpError(400, 'ID錯誤'));

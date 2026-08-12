@@ -16,10 +16,6 @@ module.exports = {
   createCreditPackage: async (req, res, next) => {
     const { name, credit_amount, price } = req.body;
 
-    if (!name || typeof name !== 'string' || !Number.isInteger(credit_amount) || !Number.isInteger(price)) {
-      return next(createHttpError(400, '欄位未填寫正確'));
-    }
-
     const isExistCreditPackage = await creditPackageRepository.findOneBy({ name });
     if (isExistCreditPackage) {
       return next(createHttpError(409, '資料重複'));
@@ -38,7 +34,7 @@ module.exports = {
 
   },
   deleteCreditPackage: async (req, res, next) => {
-    const { creditPackageId } = req.params;
+    const { id: creditPackageId } = req.params;
     const result = await creditPackageRepository.delete(creditPackageId);
     if (result.affected === 0) {
       return next(createHttpError(400, 'ID錯誤'));
