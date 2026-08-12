@@ -7,6 +7,7 @@ const logger = require('./utils/logger').child({ module: 'app' });
 
 // Router
 const skillsRouter = require('./routes/skills.route');
+const creditPackagesRouter = require('./routes/creditPackages.route');
 
 // 建立 App
 const app = express();
@@ -25,6 +26,7 @@ app.get('/healthcheck', async (req, res, next) => {
 });
 
 app.use('/api/coaches/skill', skillsRouter);
+app.use('/api/credit-package', creditPackagesRouter);
 
 app.use((req, res, next) => {
   next(createHttpError(404, '無此路由'));
