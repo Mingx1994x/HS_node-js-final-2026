@@ -34,7 +34,7 @@ module.exports = {
 
   },
   deleteCreditPackage: async (req, res, next) => {
-    const { creditPackageId } = req.params;
+    const { id: creditPackageId } = req.params;
     const result = await creditPackageRepository.delete(creditPackageId);
     if (result.affected === 0) {
       return next(createHttpError(400, 'ID錯誤'));

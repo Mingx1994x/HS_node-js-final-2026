@@ -27,7 +27,7 @@ module.exports = {
     })
   },
   deleteSkill: async (req, res, next) => {
-    const { skillId } = req.params;
+    const { id: skillId } = req.params;
     const result = await skillRepository.delete(skillId);
     if (result.affected === 0) {
       return next(createHttpError(400, 'ID錯誤'));
