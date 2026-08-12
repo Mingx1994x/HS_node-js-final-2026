@@ -3,18 +3,19 @@ const cors = require('cors');
 const createHttpError = require('http-errors');
 
 const AppDataSource = require('./db/data-source');
+const logger = require('./utils/logger').child({ module: 'app' });
 
 // 建立 App
 const app = express();
 app.use(cors());
 
 // 定義 Route
-app.get('/healthcheck', async (req, res) => {
+app.get('/healthcheck', async (req, res, next) => {
   try {
     await AppDataSource.query("SELECT 1");
     res.send('OK')
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error }, 'healthcheck 查詢失敗');
     res.status(500).send('server is not working');
   }
 });
@@ -23,11 +24,18 @@ app.use((req, res, next) => {
   next(createHttpError(404, '無此路由'));
 });
 
-app.use((err, req, res, next) => {
-  const statusCode = err.status || err.statusCode || 500;
+app.use((error, req, res, next) => {
+  const statusCode = error.status || error.statusCode || 500;
+
+  if (statusCode >= 500) {
+    logger.error({ err: error }, error.message);
+  } else {
+    logger.warn({ err: error }, error.message);
+  }
+
   res.status(statusCode).json({
     status: statusCode === 500 ? "error" : "failed",
-    message: err.expose ? err.message : '伺服器錯誤'
+    message: error.expose ? error.message : '伺服器錯誤'
   })
 });
 
