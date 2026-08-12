@@ -5,9 +5,14 @@ const createHttpError = require('http-errors');
 const AppDataSource = require('./db/data-source');
 const logger = require('./utils/logger').child({ module: 'app' });
 
+// Router
+const skillsRouter = require('./routes/skills.route');
+const creditPackagesRouter = require('./routes/creditPackages.route');
+
 // 建立 App
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 // 定義 Route
 app.get('/healthcheck', async (req, res, next) => {
@@ -19,6 +24,9 @@ app.get('/healthcheck', async (req, res, next) => {
     res.status(500).send('server is not working');
   }
 });
+
+app.use('/api/coaches/skill', skillsRouter);
+app.use('/api/credit-package', creditPackagesRouter);
 
 app.use((req, res, next) => {
   next(createHttpError(404, '無此路由'));
