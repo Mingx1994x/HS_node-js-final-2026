@@ -1,6 +1,9 @@
 const createHttpError = require("http-errors");
+
+const AppDataSource = require("../db/data-source");
 const { verifyJWT } = require("../utils/jwtTools");
 
+const userRepository = AppDataSource.getRepository('User');
 const isAuth = async (req, _res, next) => {
   const auth = req.headers.authorization;
 
@@ -11,7 +14,13 @@ const isAuth = async (req, _res, next) => {
   const token = auth.split(" ")[1];
   const decoded = await verifyJWT(token);
 
-  req.user = decoded;
+  const user = await userRepository.findOneBy({ id: decoded.id });
+
+  if (!user) {
+    return next(createHttpError(401, '無效的 token'));
+  }
+
+  req.user = user;
 
   next();
 }

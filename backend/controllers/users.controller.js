@@ -73,25 +73,39 @@ module.exports = {
     })
   },
   getUserProfile: async (req, res, next) => {
-    const { user } = req;
-    const targetUser = await userRepository.findOneBy({ id: user.id });
+    const { nickname, email } = req.user;
 
-    if (!targetUser) {
-      return next(createHttpError(401, '無效的 token'));
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          name: nickname,
+          email
+        }
+      }
+    })
+  },
+  updateUserProfile: async (req, res, next) => {
+    const { name } = req.body;
+    const { id, nickname: originName } = req.user;
+
+    if (originName === name) {
+      return next(createHttpError(400, '使用者名稱未變更'))
+    }
+
+    const result = await userRepository.update({ id }, { nickname: name });
+    if (result.affected === 0) {
+      return next(createHttpError(400, '更新使用者資料失敗'))
     }
 
     res.status(200).json({
       status: "success",
       data: {
         user: {
-          name: targetUser.nickname,
-          email: targetUser.email
+          name
         }
       }
     })
-  },
-  updateUserProfile: async (req, res, next) => {
-
   },
   updateUserPassword: async (req, res, next) => {
   },
