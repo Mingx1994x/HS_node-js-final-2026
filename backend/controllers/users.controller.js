@@ -73,7 +73,22 @@ module.exports = {
     })
   },
   getUserProfile: async (req, res, next) => {
+    const { user } = req;
+    const targetUser = await userRepository.findOneBy({ id: user.id });
 
+    if (!targetUser) {
+      return next(createHttpError(401, '無效的 token'));
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          name: targetUser.nickname,
+          email: targetUser.email
+        }
+      }
+    })
   },
   updateUserProfile: async (req, res, next) => {
 
