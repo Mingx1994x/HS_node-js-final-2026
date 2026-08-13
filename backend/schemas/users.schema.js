@@ -1,0 +1,10 @@
+const { z } = require("zod");
+const { passwordSchema } = require("./passwordSchema");
+
+const userSchema = z.object({
+  nickname: z.string({ error: '欄位未填寫正確' }).trim().min(1, '欄位未填寫正確').max(50, '欄位未填寫正確'),
+  email: z.string({ error: '欄位未填寫正確' }).trim().toLowerCase().email('欄位未填寫正確'),
+  password: passwordSchema
+});
+
+module.exports = { userSchema };
