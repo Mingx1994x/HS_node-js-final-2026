@@ -111,10 +111,6 @@ module.exports = {
     const { password, new_password } = req.body;
     const { id } = req.user;
 
-    if (password === new_password) {
-      return next(createHttpError(400, '新密碼不能與舊密碼相同'))
-    }
-
     const user = await userRepository.findOne({
       select: {
         hashPassword: true,
