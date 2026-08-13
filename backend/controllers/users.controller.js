@@ -5,6 +5,7 @@ const AppDataSource = require("../db/data-source");
 const { generateJWT } = require("../utils/jwtTools");
 
 const userRepository = AppDataSource.getRepository('User');
+const salt = 10;
 
 module.exports = {
   signup: async (req, res, next) => {
@@ -15,7 +16,6 @@ module.exports = {
       return next(createHttpError(409, 'Email 已被使用'))
     }
 
-    const salt = 10;
     const hashPassword = await bcrypt.hash(password, salt);
     const newUser = await userRepository.save({
       nickname: name,
@@ -108,5 +108,35 @@ module.exports = {
     })
   },
   updateUserPassword: async (req, res, next) => {
+    const { password, new_password } = req.body;
+    const { id } = req.user;
+
+    if (password === new_password) {
+      return next(createHttpError(400, '新密碼不能與舊密碼相同'))
+    }
+
+    const user = await userRepository.findOne({
+      select: {
+        hashPassword: true,
+      },
+      where: { id },
+    });
+
+    const isMatch = await bcrypt.compare(password, user.hashPassword);
+
+    if (!isMatch) {
+      return next(createHttpError(400, '密碼輸入錯誤'))
+    }
+
+    const hashPassword = await bcrypt.hash(new_password, salt);
+    const result = await userRepository.update({ id }, { hashPassword });
+    if (result.affected === 0) {
+      return next(createHttpError(400, '更新使用者資料失敗'))
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: null
+    })
   },
 }
