@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const { createCoachRole, getCoachProfile, updateCoachProfile } = require('../controllers/coaches.controller');
-const { createCourse, getCoursesByCoach } = require('../controllers/courses.controller');
+const { createCourse, getCoursesByCoach, getCourseById } = require('../controllers/courses.controller');
 const { isAuth } = require('../middlewares/isAuth');
 const { isCoach } = require('../middlewares/isCoach');
 const validate = require('../middlewares/validate');
@@ -13,7 +13,7 @@ router.get('/', isAuth, isCoach, getCoachProfile);
 router.put('/', isAuth, isCoach, validate(updateCoachSchema), updateCoachProfile);
 router.get('/courses', isAuth, isCoach, getCoursesByCoach);
 router.post('/courses', isAuth, isCoach, validate(courseSchema), createCourse);
-// router.get('/courses/:id');
+router.get('/courses/:id', isAuth, validate(idParamSchema, 'params'), getCourseById);
 // router.put('/courses/:id');
 router.post('/:id', validate(idParamSchema, 'params'), validate(coachSchema), createCoachRole);
 

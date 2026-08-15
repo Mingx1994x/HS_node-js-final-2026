@@ -35,6 +35,31 @@ module.exports = {
       data: courseData
     })
   },
+  getCourseById: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const { id: courseId } = req.params;
+    const course = await courseRepository.findOne({
+      where: { id: courseId },
+      relations: { Skill: true }
+    });
+
+    if (!course || userId !== course.user_id) return next(createHttpError(400, '課程不存在'));
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        start_at: course.start_at,
+        end_at: course.end_at,
+        max_participants: course.max_participants,
+        skill_name: course.Skill.name,
+        skill_id: course.skill_id,
+        meeting_url: course.meeting_url,
+      }
+    })
+  },
   createCourse: async (req, res, next) => {
     const { id: userId } = req.user;
     const { name, description, skill_id, start_at, end_at, max_participants, meeting_url } = req.body;
