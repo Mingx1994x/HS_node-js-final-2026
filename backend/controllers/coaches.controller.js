@@ -50,5 +50,18 @@ module.exports = {
         }
       }
     })
+  },
+  getCoachProfile: async (req, res, next) => {
+    const { coach } = req.user;
+    res.status(200).json({
+      status: "success",
+      data: {
+        id: coach.id,
+        experience_years: coach.experience_years,
+        description: coach.description,
+        profile_image_url: coach.profile_image_url,
+        skill_ids: []
+      }
+    })
   }
 }
