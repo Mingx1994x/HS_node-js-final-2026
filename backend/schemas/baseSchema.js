@@ -5,10 +5,14 @@ const idUUIDSchema = z.string({ error: 'ID錯誤' }).uuid('ID錯誤');
 
 const urlSchema = z.string({ error: '欄位未填寫正確' }).url({ protocol: /^https$/, error: '欄位未填寫正確' });
 
+const dateTimeSchema = z.string({ error: '欄位未填寫正確' }).pipe(z.iso.datetime({ error: '欄位未填寫正確' }));
+
+const positiveIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').positive('欄位未填寫正確');
+
+const nonNegativeIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').nonnegative('欄位未填寫正確');
+
 const idParamSchema = z.object({
   id: idUUIDSchema
 });
 
-const positiveIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').positive('欄位未填寫正確');
-
-module.exports = { isRequireSchema, idUUIDSchema, idParamSchema, positiveIntegerSchema, urlSchema };
+module.exports = { isRequireSchema, idUUIDSchema, idParamSchema, dateTimeSchema, positiveIntegerSchema, nonNegativeIntegerSchema, urlSchema };

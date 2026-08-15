@@ -1,8 +1,8 @@
 const { z } = require("zod");
-const { urlSchema, isRequireSchema, idUUIDSchema } = require("./baseSchema");
+const { urlSchema, isRequireSchema, idUUIDSchema, nonNegativeIntegerSchema } = require("./baseSchema");
 
 const coachSchema = z.object({
-  experience_years: z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').nonnegative('欄位未填寫正確'),
+  experience_years: nonNegativeIntegerSchema,
   description: isRequireSchema,
   profile_image_url: z.union([
     // 空值通過
