@@ -13,6 +13,6 @@ const urlSchema = z.union([
   z.literal(''),
   // 有值, https 開頭字串
   z.string({ error: '欄位未填寫正確' }).url({ protocol: /^https$/, error: '欄位未填寫正確' })
-]);
+], { error: '欄位未填寫正確' });
 
 module.exports = { isRequireSchema, idParamSchema, positiveIntegerSchema, urlSchema };
