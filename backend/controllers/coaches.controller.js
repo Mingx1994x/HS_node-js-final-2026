@@ -13,17 +13,24 @@ module.exports = {
 
     if (user.role === 'COACH') return next(createHttpError(409, '使用者已經是教練'));
 
-    const updateUserRoleResult = await userRepository.update({ id }, { role: 'COACH' });
-    if (updateUserRoleResult.affected === 0) return next(createHttpError(400, '更新使用者資料失敗'));
+    const createCoachProfile = await AppDataSource.transaction(
+      async (manager) => {
+        const updateUserRoleResult = await manager.update('User', { id }, { role: 'COACH' });
 
-    const coachProfile = await coachRepository.save({
-      experience_years,
-      description,
-      profile_image_url,
-      User: {
-        id
+        if (updateUserRoleResult.affected === 0) {
+          throw createHttpError(400, '更新使用者資料失敗')
+        }
+
+        return manager.save('Coach', {
+          experience_years,
+          description,
+          profile_image_url,
+          User: {
+            id
+          }
+        })
       }
-    });
+    )
 
     res.status(201).json({
       status: "success",
@@ -33,13 +40,13 @@ module.exports = {
           role: "COACH"
         },
         coach: {
-          id: coachProfile.id,
-          user_id: coachProfile.User.id,
-          experience_years: coachProfile.experience_years,
-          description: coachProfile.description,
-          profile_image_url: coachProfile.profile_image_url,
-          created_at: coachProfile.created_at,
-          updated_at: coachProfile.updated_at
+          id: createCoachProfile.id,
+          user_id: createCoachProfile.User.id,
+          experience_years: createCoachProfile.experience_years,
+          description: createCoachProfile.description,
+          profile_image_url: createCoachProfile.profile_image_url,
+          created_at: createCoachProfile.created_at,
+          updated_at: createCoachProfile.updated_at
         }
       }
     })
