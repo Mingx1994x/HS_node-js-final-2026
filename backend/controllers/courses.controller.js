@@ -60,6 +60,54 @@ module.exports = {
       }
     })
   },
+  updateCourseById: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const { id: courseId } = req.params;
+    const { name, description, skill_id, start_at, end_at, max_participants, meeting_url } = req.body;
+
+    const course = await courseRepository.findOneBy({ id: courseId });
+    if (!course || userId !== course.user_id) return next(createHttpError(400, '課程不存在'));
+
+    const skill = await skillRepository.findOneBy({ id: skill_id });
+    if (!skill) return next(createHttpError(400, 'ID錯誤'));
+
+    const result = await courseRepository.createQueryBuilder()
+      .update()
+      .set({
+        name,
+        description,
+        max_participants,
+        start_at,
+        end_at,
+        meeting_url,
+        user_id: userId,
+        skill_id
+      })
+      .where('id = :id', { id: courseId })
+      .returning(['updated_at', 'created_at'])
+      .execute();
+
+    if (result.affected === 0) return next(createHttpError(400, '更新課程資料失敗'))
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        course: {
+          id: courseId,
+          user_id: userId,
+          skill_id,
+          name,
+          description,
+          start_at,
+          end_at,
+          max_participants,
+          meeting_url,
+          updated_at: result.raw[0]?.updated_at,
+          created_at: result.raw[0]?.created_at,
+        }
+      }
+    })
+  },
   createCourse: async (req, res, next) => {
     const { id: userId } = req.user;
     const { name, description, skill_id, start_at, end_at, max_participants, meeting_url } = req.body;
