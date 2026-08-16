@@ -11,8 +11,17 @@ const positiveIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('
 
 const nonNegativeIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').nonnegative('欄位未填寫正確');
 
+const pageQuerySchema = z.coerce.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').positive('欄位未填寫正確');
+
+// params 驗證
 const idParamSchema = z.object({
   id: idUUIDSchema
 });
 
-module.exports = { isRequireSchema, idUUIDSchema, idParamSchema, dateTimeSchema, positiveIntegerSchema, nonNegativeIntegerSchema, urlSchema };
+// query 驗證
+const paginationSchema = z.object({
+  page: pageQuerySchema,
+  per: pageQuerySchema
+})
+
+module.exports = { isRequireSchema, idUUIDSchema, urlSchema, dateTimeSchema, positiveIntegerSchema, nonNegativeIntegerSchema, idParamSchema, paginationSchema };

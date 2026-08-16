@@ -10,6 +10,7 @@ const skillsRouter = require('./routes/skills.route');
 const creditPackagesRouter = require('./routes/creditPackages.route');
 const usersRouter = require('./routes/users.route');
 const coachesRouter = require('./routes/coaches.route');
+const publicCoachRouter = require('./routes/publicCoaches.route');
 
 // 建立 App
 const app = express();
@@ -28,6 +29,7 @@ app.get('/healthcheck', async (req, res, next) => {
 });
 
 app.use('/api/coaches/skill', skillsRouter);
+app.use('/api/coaches', publicCoachRouter);
 app.use('/api/credit-package', creditPackagesRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/admin/coaches', coachesRouter);
