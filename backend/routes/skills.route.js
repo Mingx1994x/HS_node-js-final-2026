@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const { getSkills, createSkill, deleteSkill } = require('../controllers/skills.controller');
-const validate = require('../middlewares/validate');
+const { validate } = require('../middlewares/validate');
 const { idParamSchema } = require('../schemas/baseSchema');
 
 const { skillSchema } = require('../schemas/skills.schema');
