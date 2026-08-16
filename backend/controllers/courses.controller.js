@@ -5,6 +5,7 @@ const { getCourseStatus } = require("../utils/timeFormat");
 const skillRepository = AppDataSource.getRepository('Skill');
 const courseRepository = AppDataSource.getRepository('Course');
 module.exports = {
+  // 教練後台 API
   getCoursesByCoach: async (req, res, next) => {
     const { id } = req.user;
     const courses = await courseRepository.find({
@@ -132,6 +133,32 @@ module.exports = {
       data: {
         course: newCourse
       }
+    })
+  },
+  // 用戶端公開前台
+  getAllCourses: async (req, res, next) => {
+
+    const allCourses = await courseRepository.find({
+      relations: {
+        User: true,
+        Skill: true
+      }
+    });
+
+    const courses = allCourses.filter(course => getCourseStatus(course.start_at, course.end_at) === "進行中")
+      .map(course => ({
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        start_at: course.start_at,
+        end_at: course.end_at,
+        max_participants: course.max_participants,
+        coach_name: course.User.nickname,
+        skill_name: course.Skill.name
+      }))
+    res.status(200).json({
+      status: "success",
+      data: courses
     })
   }
 }

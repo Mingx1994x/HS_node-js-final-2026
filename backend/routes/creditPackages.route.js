@@ -1,5 +1,5 @@
 const { getCreditPackages, createCreditPackage, deleteCreditPackage } = require('../controllers/creditPackages.controller');
-const validate = require('../middlewares/validate');
+const { validate } = require('../middlewares/validate');
 const { idParamSchema } = require('../schemas/baseSchema');
 const { creditPackageSchema } = require('../schemas/creditPackages.schema');
 
