@@ -1,8 +1,10 @@
 const createHttpError = require("http-errors");
 const AppDataSource = require("../db/data-source");
+const { getCourseStatus } = require("../utils/timeFormat");
 
 const coachRepository = AppDataSource.getRepository('Coach');
 const coachSkillRepository = AppDataSource.getRepository('CoachSkill');
+const courseRepository = AppDataSource.getRepository('Course');
 module.exports = {
   getCoaches: async (req, res, next) => {
     const { page, per } = req.query;
@@ -76,6 +78,42 @@ module.exports = {
           skills: skills.map(skill => (skill.Skill.name)),
         }
       }
+    })
+  },
+  getCoursesByCoachId: async (req, res, next) => {
+    const { id: coachId } = req.params;
+
+    const coach = await coachRepository.findOne({
+      where: { id: coachId },
+      relations: { User: true }
+    });
+    if (!coach) return next(createHttpError(400, '找不到該教練'))
+
+    const courseByCoach = await courseRepository.find({
+      where: {
+        user_id: coach.User.id
+      },
+      relations: {
+        User: true,
+        Skill: true
+      }
+    });
+
+    const courses = courseByCoach.filter(course => getCourseStatus(course.start_at, course.end_at) !== "已結束")
+      .map(course => ({
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        start_at: course.start_at,
+        end_at: course.end_at,
+        max_participants: course.max_participants,
+        coach_name: course.User.nickname,
+        skill_name: course.Skill.name
+      }));
+
+    res.status(200).json({
+      status: "success",
+      data: courses
     })
   }
 }
