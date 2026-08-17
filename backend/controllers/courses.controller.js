@@ -249,5 +249,27 @@ module.exports = {
       data: null
     })
   },
+  cancelCourse: async (req, res, next) => {
+    const { id: courseId } = req.params;
+    const { id: userId } = req.user;
 
+    const course = await courseRepository.findOneBy({ id: courseId });
+    if (!course) return next(createHttpError(400, 'ID錯誤'));
+
+    const cancelCourse = await courseBookingRepository.findOneBy({
+      course_id: courseId,
+      user_id: userId,
+      cancelled_at: IsNull()
+    });
+
+    if (!cancelCourse) return next(createHttpError(400, 'ID錯誤'));
+
+    cancelCourse.cancelled_at = new Date();
+    await courseBookingRepository.save(cancelCourse);
+
+    res.status(200).json({
+      status: "success",
+      data: null
+    })
+  }
 }
