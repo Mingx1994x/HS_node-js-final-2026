@@ -1,9 +1,12 @@
 const createHttpError = require("http-errors");
 const AppDataSource = require("../db/data-source");
 const { getCourseStatus } = require("../utils/timeFormat");
+const { IsNull } = require("typeorm");
 
 const skillRepository = AppDataSource.getRepository('Skill');
 const courseRepository = AppDataSource.getRepository('Course');
+const packageOrderRepository = AppDataSource.getRepository('CreditPackageOrder');
+const courseBookingRepository = AppDataSource.getRepository('CourseBooking');
 module.exports = {
   // 教練後台 API
   getCoursesByCoach: async (req, res, next) => {
@@ -159,6 +162,114 @@ module.exports = {
     res.status(200).json({
       status: "success",
       data: courses
+    })
+  },
+  getUserCourses: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const [totalCredits, usedCredits] = await Promise.all([
+      packageOrderRepository.sum('purchased_credits', { user_id: userId }),
+      courseBookingRepository.count({ where: { user_id: userId, cancelled_at: IsNull() } })
+    ]);
+
+    const credit_remain = (totalCredits ?? 0) - usedCredits;
+
+    const bookingCourses = await courseBookingRepository.find({
+      where: { user_id: userId },
+      relations: {
+        Course: {
+          User: true
+        }
+      },
+      order: {
+        Course: { start_at: 'ASC' }
+      }
+    });
+
+    const bookingCourseList = bookingCourses.map(data => ({
+      course_id: data.course_id,
+      name: data.Course.name,
+      start_at: data.Course.start_at,
+      end_at: data.Course.end_at,
+      meeting_url: data.Course.meeting_url,
+      coach_name: data.Course.User.nickname,
+      cancelled_at: data.cancelled_at
+    }))
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        credit_remain,
+        credit_usage: usedCredits,
+        course_booking: bookingCourseList
+      }
+    })
+  },
+  bookCourse: async (req, res, next) => {
+    const { id: courseId } = req.params;
+    const { id: userId } = req.user;
+
+    const course = await courseRepository.findOneBy({ id: courseId });
+    if (!course) return next(createHttpError(400, 'ID錯誤'));
+
+    const hasBookingCourse = await courseBookingRepository.findOne({
+      where: {
+        course_id: courseId,
+        user_id: userId
+      }
+    });
+
+    if (hasBookingCourse) return next(createHttpError(400, '已經報名過此課程'));
+
+    const [totalCredits, usedCredits] = await Promise.all([
+      packageOrderRepository.sum('purchased_credits', { user_id: userId }),
+      courseBookingRepository.count({ where: { user_id: userId, cancelled_at: IsNull() } })
+    ]);
+
+    const creditRemain = (totalCredits ?? 0) - usedCredits;
+
+    if (creditRemain <= 0) return next(createHttpError(400, '已無可使用堂數'));
+
+    const participants = await courseBookingRepository.count(
+      {
+        where: {
+          course_id: courseId,
+          cancelled_at: IsNull()
+        }
+      });
+
+    if (participants === course.max_participants) return next(createHttpError(400, '已達最大參加人數，無法參加'));
+
+    await courseBookingRepository.save({
+      user_id: userId,
+      course_id: courseId,
+    });
+
+    res.status(201).json({
+      status: "success",
+      data: null
+    })
+  },
+  cancelCourse: async (req, res, next) => {
+    const { id: courseId } = req.params;
+    const { id: userId } = req.user;
+
+    const course = await courseRepository.findOneBy({ id: courseId });
+    if (!course) return next(createHttpError(400, 'ID錯誤'));
+
+    const cancelCourse = await courseBookingRepository.findOneBy({
+      course_id: courseId,
+      user_id: userId,
+      cancelled_at: IsNull()
+    });
+
+    if (!cancelCourse) return next(createHttpError(400, 'ID錯誤'));
+
+    cancelCourse.cancelled_at = new Date();
+    await courseBookingRepository.save(cancelCourse);
+
+    res.status(200).json({
+      status: "success",
+      data: null
     })
   }
 }
