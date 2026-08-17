@@ -63,5 +63,31 @@ module.exports = {
       status: "success",
       data: null
     })
+  },
+  getPackageOrders: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const packageOrders = await packageOrderRepository.find({
+      where: {
+        user_id: userId
+      },
+      relations: {
+        CreditPackage: true
+      },
+      order: {
+        purchase_at: 'DESC'
+      }
+    });
+
+    const orderList = packageOrders.map(order => ({
+      name: order.CreditPackage.name,
+      purchased_credits: order.purchased_credits,
+      price_paid: order.price_paid,
+      purchase_at: order.purchase_at
+    }))
+
+    res.status(200).json({
+      status: "success",
+      data: orderList
+    })
   }
 }
