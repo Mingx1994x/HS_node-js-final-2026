@@ -7,6 +7,7 @@ const User = require("../entities/users.entity");
 const Coach = require("../entities/coaches.entity");
 const CoachSkill = require("../entities/coachSkills.entity");
 const Course = require("../entities/courses.entity");
+const creditPackageOrders = require("../entities/creditPackageOrders.entity");
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -15,7 +16,7 @@ const AppDataSource = new DataSource({
   username: config.get('db.username'),
   password: config.get('db.password'),
   database: config.get('db.database'),
-  entities: [Skill, CreditPackage, User, Coach, CoachSkill, Course],
+  entities: [Skill, CreditPackage, creditPackageOrders, User, Coach, CoachSkill, Course],
   synchronize: config.get('db.synchronize') === 'true',
   ssl: config.get('db.ssl') === 'true'
 });
