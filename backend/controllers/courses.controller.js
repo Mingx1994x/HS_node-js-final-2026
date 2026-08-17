@@ -164,6 +164,46 @@ module.exports = {
       data: courses
     })
   },
+  getUserCourses: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const [totalCredits, usedCredits] = await Promise.all([
+      packageOrderRepository.sum('purchased_credits', { user_id: userId }),
+      courseBookingRepository.count({ where: { user_id: userId, cancelled_at: IsNull() } })
+    ]);
+
+    const credit_remain = (totalCredits ?? 0) - usedCredits;
+
+    const bookingCourses = await courseBookingRepository.find({
+      where: { user_id: userId },
+      relations: {
+        Course: {
+          User: true
+        }
+      },
+      order: {
+        Course: { start_at: 'ASC' }
+      }
+    });
+
+    const bookingCourseList = bookingCourses.map(data => ({
+      course_id: data.course_id,
+      name: data.Course.name,
+      start_at: data.Course.start_at,
+      end_at: data.Course.end_at,
+      meeting_url: data.Course.meeting_url,
+      coach_name: data.Course.User.nickname,
+      cancelled_at: data.cancelled_at
+    }))
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        credit_remain,
+        credit_usage: usedCredits,
+        course_booking: bookingCourseList
+      }
+    })
+  },
   bookCourse: async (req, res, next) => {
     const { id: courseId } = req.params;
     const { id: userId } = req.user;
@@ -208,5 +248,6 @@ module.exports = {
       status: "success",
       data: null
     })
-  }
+  },
+
 }

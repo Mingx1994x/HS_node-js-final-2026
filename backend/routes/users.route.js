@@ -6,6 +6,7 @@ const { signup, login, getUserProfile, updateUserProfile, updateUserPassword } =
 const { userSchema, loginSchema, userNameSchema } = require('../schemas/users.schema');
 const { updatePasswordSchema, isRequirePasswordSchema } = require('../schemas/passwordSchema');
 const { getPackageOrders } = require('../controllers/creditPackages.controller');
+const { getUserCourses } = require('../controllers/courses.controller');
 
 // auth
 router.post('/signup', validate(userSchema), signup);
@@ -16,5 +17,6 @@ router.get('/profile', isAuth, getUserProfile);
 router.put('/profile', isAuth, validate(userNameSchema), updateUserProfile);
 router.put('/password', isAuth, validate(isRequirePasswordSchema), validate(updatePasswordSchema), updateUserPassword);
 router.get('/credit-package', isAuth, getPackageOrders);
+router.get('/courses', isAuth, getUserCourses);
 
 module.exports = router;
