@@ -7,6 +7,9 @@ const urlSchema = z.string({ error: '欄位未填寫正確' }).url({ protocol: /
 
 const dateTimeSchema = z.string({ error: '欄位未填寫正確' }).pipe(z.iso.datetime({ error: '欄位未填寫正確' }));
 
+const availableMonthValue = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const monthSchema = z.enum(availableMonthValue, { error: '欄位未填寫正確' })
+
 const positiveIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').positive('欄位未填寫正確');
 
 const nonNegativeIntegerSchema = z.number({ error: '欄位未填寫正確' }).int('欄位未填寫正確').nonnegative('欄位未填寫正確');
@@ -22,6 +25,10 @@ const idParamSchema = z.object({
 const paginationSchema = z.object({
   page: pageQuerySchema,
   per: pageQuerySchema
-})
+});
 
-module.exports = { isRequireSchema, idUUIDSchema, urlSchema, dateTimeSchema, positiveIntegerSchema, nonNegativeIntegerSchema, idParamSchema, paginationSchema };
+const revenueQuerySchema = z.object({
+  month: monthSchema
+});
+
+module.exports = { isRequireSchema, idUUIDSchema, urlSchema, dateTimeSchema, positiveIntegerSchema, nonNegativeIntegerSchema, idParamSchema, paginationSchema, revenueQuerySchema };

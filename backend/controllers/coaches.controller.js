@@ -1,9 +1,13 @@
 const createHttpError = require("http-errors");
 const AppDataSource = require("../db/data-source");
+const { IsNull, Between } = require("typeorm");
 
 const userRepository = AppDataSource.getRepository('User');
-const coachRepository = AppDataSource.getRepository('Coach');
 const coachSkillRepository = AppDataSource.getRepository('CoachSkill');
+const courseBookingRepository = AppDataSource.getRepository('CourseBooking');
+const creditPackageRepository = AppDataSource.getRepository('CreditPackage');
+
+const availableMonthValue = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 module.exports = {
   createCoachRole: async (req, res, next) => {
     const { id } = req.params;
@@ -106,6 +110,50 @@ module.exports = {
         description: description,
         profile_image_url: profile_image_url,
         skill_ids: skill_ids
+      }
+    })
+  },
+  getCoachRevenue: async (req, res, next) => {
+    const { id: userId } = req.user;
+    const { month } = req.query;
+
+    const year = new Date().getFullYear();
+    const monthIndex = availableMonthValue.indexOf(month);
+    const startAt = new Date(year, monthIndex, 1);
+    const endAt = new Date(year, monthIndex + 1, 1);
+
+    const [bookings, total_price, total_amounts] = await Promise.all([
+      courseBookingRepository.find({
+        where: {
+          cancelled_at: IsNull(),
+          booking_at: Between(startAt, new Date(endAt.getTime() - 1)),
+          Course: {
+            // 教練 user id
+            user_id: userId
+          }
+        },
+        select: {
+          // user 報名 
+          user_id: true
+        }
+      }),
+      creditPackageRepository.sum('price'),
+      creditPackageRepository.sum('credit_amount'),
+    ])
+
+    const average = (total_price ?? 0) / (total_amounts || 1);
+    const userIds = bookings.map(booking => booking.user_id);
+    const participants = new Set(userIds).size;
+    const courseCounts = bookings.length;
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        total: {
+          revenue: Math.floor(average * courseCounts),
+          participants,
+          course_count: courseCounts
+        }
       }
     })
   }
