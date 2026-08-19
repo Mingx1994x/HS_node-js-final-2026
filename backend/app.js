@@ -12,6 +12,7 @@ const usersRouter = require('./routes/users.route');
 const coachesRouter = require('./routes/coaches.route');
 const publicCoachRouter = require('./routes/publicCoaches.route');
 const courseRouter = require('./routes/courses.route');
+const uploadImageRouter = require('./routes/uploadImage.route');
 
 // 建立 App
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/coaches/skill', skillsRouter);
 app.use('/api/coaches', publicCoachRouter);
 app.use('/api/credit-package', creditPackagesRouter);
 app.use('/api/courses', courseRouter);
+app.use('/api/upload', uploadImageRouter);
 
 app.use((req, res, next) => {
   next(createHttpError(404, '無此路由'));
