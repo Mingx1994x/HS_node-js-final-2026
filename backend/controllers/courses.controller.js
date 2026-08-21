@@ -23,7 +23,15 @@ module.exports = {
       where: { user_id: id }
     });
 
-    const courseData = courses.map(course => ({
+    const getParticipants = async (course_id) => await courseBookingRepository.count(
+      {
+        where: {
+          course_id,
+          cancelled_at: IsNull()
+        }
+      });
+
+    const courseData = await Promise.all(courses.map(async (course) => ({
       id: course.id,
       name: course.name,
       status: getCourseStatus(course.start_at, course.end_at),
@@ -31,8 +39,8 @@ module.exports = {
       end_at: course.end_at,
       max_participants: course.max_participants,
       meeting_url: course.meeting_url,
-      participants: 0
-    }))
+      participants: await getParticipants(course.id)
+    })))
 
     res.status(200).json({
       status: "success",
