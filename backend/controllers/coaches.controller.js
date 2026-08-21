@@ -64,7 +64,7 @@ module.exports = {
       }
     })
   },
-  getCoachProfile: async (req, res, next) => {
+  getCoachProfile: async (req, res, _next) => {
     const { coach } = req.user;
 
     const coachSkills = await coachSkillRepository.find({
@@ -85,7 +85,7 @@ module.exports = {
       }
     })
   },
-  updateCoachProfile: async (req, res, next) => {
+  updateCoachProfile: async (req, res, _next) => {
     const { coach } = req.user;
     const { experience_years, description, profile_image_url, skill_ids } = req.body;
 
@@ -121,7 +121,7 @@ module.exports = {
       }
     })
   },
-  getCoachRevenue: async (req, res, next) => {
+  getCoachRevenue: async (req, res, _next) => {
     const { id: userId } = req.user;
     const { month } = req.query;
 
@@ -170,7 +170,7 @@ module.exports = {
    * - getCoaches：取得教練分頁列表
    * - getCoachById：取得單一教練詳細資料
    */
-  getCoaches: async (req, res, next) => {
+  getCoaches: async (req, res, _next) => {
     const { page, per } = req.query;
     const pagination = Number(page);
     const lists = Number(per);

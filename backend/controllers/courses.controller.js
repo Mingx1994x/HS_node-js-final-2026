@@ -10,7 +10,7 @@ const courseBookingRepository = AppDataSource.getRepository('CourseBooking');
 const coachRepository = AppDataSource.getRepository('Coach');
 module.exports = {
   // 教練後台 API
-  getCoursesByCoach: async (req, res, next) => {
+  getCoursesByCoach: async (req, res, _next) => {
     const { id } = req.user;
     const courses = await courseRepository.find({
       select: {
@@ -152,7 +152,7 @@ module.exports = {
     })
   },
   // 用戶端公開前台
-  getAllCourses: async (req, res, next) => {
+  getAllCourses: async (_req, res, _next) => {
 
     const allCourses = await courseRepository.find({
       relations: {
@@ -213,7 +213,7 @@ module.exports = {
       data: courses
     })
   },
-  getUserCourses: async (req, res, next) => {
+  getUserCourses: async (req, res, _next) => {
     const { id: userId } = req.user;
     const [totalCredits, usedCredits] = await Promise.all([
       packageOrderRepository.sum('purchased_credits', { user_id: userId }),
