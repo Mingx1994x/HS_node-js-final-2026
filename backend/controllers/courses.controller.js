@@ -23,14 +23,15 @@ module.exports = {
       where: { user_id: id }
     });
 
-    const getParticipantsCount = await courseBookingRepository
-      .createQueryBuilder('booking')
-      .select('booking.course_id', 'course_id')
-      .addSelect('COUNT(*)', 'count')
-      .where('booking.course_id IN (:...courseIds)', { courseIds: courses.map(course => course.id) })
-      .andWhere('booking.cancelled_at IS NULL')
-      .groupBy('booking.course_id')
-      .getRawMany();
+    const getParticipantsCount = courses.length > 0 ?
+      (await courseBookingRepository
+        .createQueryBuilder('booking')
+        .select('booking.course_id', 'course_id')
+        .addSelect('COUNT(*)', 'count')
+        .where('booking.course_id IN (:...courseIds)', { courseIds: courses.map(course => course.id) })
+        .andWhere('booking.cancelled_at IS NULL')
+        .groupBy('booking.course_id')
+        .getRawMany()) : [];
 
     const participants = Object.fromEntries(getParticipantsCount.map(row => [row.course_id, Number(row.count)]));
 
