@@ -1,8 +1,5 @@
-const { formidable } = require('formidable');
-const createHttpError = require('http-errors');
 const fs = require('fs/promises');
 
-const { getUploadImageConfig } = require('../utils/formidableConfig');
 const { generateRemoteFilePath, getUploadImageUrl } = require('../utils/firebase');
 const logger = require('../utils/logger').child({ module: 'uploadImage:controller' });
 

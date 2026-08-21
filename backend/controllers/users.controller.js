@@ -72,7 +72,7 @@ module.exports = {
       }
     })
   },
-  getUserProfile: async (req, res, next) => {
+  getUserProfile: async (req, res, _next) => {
     const { nickname, email } = req.user;
 
     res.status(200).json({

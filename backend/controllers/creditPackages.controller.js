@@ -64,7 +64,7 @@ module.exports = {
       data: null
     })
   },
-  getPackageOrders: async (req, res, next) => {
+  getPackageOrders: async (req, res, _next) => {
     const { id: userId } = req.user;
     const packageOrders = await packageOrderRepository.find({
       where: {

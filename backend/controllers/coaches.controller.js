@@ -3,12 +3,20 @@ const AppDataSource = require("../db/data-source");
 const { IsNull, Between } = require("typeorm");
 
 const userRepository = AppDataSource.getRepository('User');
+const coachRepository = AppDataSource.getRepository('Coach');
 const coachSkillRepository = AppDataSource.getRepository('CoachSkill');
 const courseBookingRepository = AppDataSource.getRepository('CourseBooking');
 const creditPackageRepository = AppDataSource.getRepository('CreditPackage');
 
 const availableMonthValue = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 module.exports = {
+  /**
+   * 教練後台 API
+   * - createCoachRole：一般使用者升級成教練
+   * - getCoachProfile：取得教練本人的後台資料
+   * - updateCoachProfile：更新教練本人的後台資料
+   * - getCoachRevenue：取得教練個人月營收
+   */
   createCoachRole: async (req, res, next) => {
     const { id } = req.params;
     const { experience_years, description, profile_image_url } = req.body;
@@ -56,7 +64,7 @@ module.exports = {
       }
     })
   },
-  getCoachProfile: async (req, res, next) => {
+  getCoachProfile: async (req, res, _next) => {
     const { coach } = req.user;
 
     const coachSkills = await coachSkillRepository.find({
@@ -77,7 +85,7 @@ module.exports = {
       }
     })
   },
-  updateCoachProfile: async (req, res, next) => {
+  updateCoachProfile: async (req, res, _next) => {
     const { coach } = req.user;
     const { experience_years, description, profile_image_url, skill_ids } = req.body;
 
@@ -113,7 +121,7 @@ module.exports = {
       }
     })
   },
-  getCoachRevenue: async (req, res, next) => {
+  getCoachRevenue: async (req, res, _next) => {
     const { id: userId } = req.user;
     const { month } = req.query;
 
@@ -156,5 +164,84 @@ module.exports = {
         }
       }
     })
-  }
+  },
+  /**
+   * 公開用戶端前台 API
+   * - getCoaches：取得教練分頁列表
+   * - getCoachById：取得單一教練詳細資料
+   */
+  getCoaches: async (req, res, _next) => {
+    const { page, per } = req.query;
+    const pagination = Number(page);
+    const lists = Number(per);
+    const coaches = await coachRepository.find({
+      relations: { User: true },
+      select: {
+        id: true,
+        User: {
+          id: true,
+          nickname: true
+        }
+      },
+      skip: (pagination - 1) * lists,
+      take: lists,
+      order: { id: 'ASC' },
+    });
+
+    const coachLists = coaches.map(coach => ({
+      id: coach.id,
+      user_id: coach.User.id,
+      name: coach.User.nickname
+    }))
+
+    res.status(200).json({
+      status: "success",
+      data: coachLists
+    })
+  },
+  getCoachById: async (req, res, next) => {
+    const { id: coachId } = req.params;
+
+    const coach = await coachRepository.findOne(
+      {
+        where: {
+          id: coachId
+        },
+        relations: {
+          User: true
+        }
+      }
+    );
+
+    if (!coach) return next(createHttpError(400, '找不到該教練'))
+
+    const skills = await coachSkillRepository.find({
+      where: {
+        coach_id: coachId
+      },
+      relations: {
+        Skill: true
+      }
+    })
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          name: coach.User.nickname,
+          role: coach.User.role
+        },
+        coach: {
+          id: coach.id,
+          user_id: coach.User.id,
+          experience_years: coach.experience_years,
+          description: coach.description,
+          profile_image_url: coach.profile_image_url,
+          created_at: coach.created_at,
+          updated_at: coach.updated_at,
+          skills: skills.map(skill => (skill.Skill.name)),
+        }
+      }
+    })
+  },
 }
