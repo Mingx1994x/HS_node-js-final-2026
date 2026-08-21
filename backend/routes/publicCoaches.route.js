@@ -1,6 +1,7 @@
-const { getCoaches, getCoachById, getCoursesByCoachId } = require('../controllers/publicCoaches.controller');
-const { validate, validateQuery } = require('../middlewares/validate');
 const { paginationSchema, idParamSchema } = require('../schemas/baseSchema');
+const { getCoaches, getCoachById } = require('../controllers/coaches.controller');
+const { getCoursesByCoachId } = require('../controllers/courses.controller');
+const { validate, validateQuery } = require('../middlewares/validate');
 
 const router = require('express').Router();
 
