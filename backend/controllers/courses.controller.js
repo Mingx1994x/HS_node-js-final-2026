@@ -23,15 +23,18 @@ module.exports = {
       where: { user_id: id }
     });
 
-    const getParticipants = async (course_id) => await courseBookingRepository.count(
-      {
-        where: {
-          course_id,
-          cancelled_at: IsNull()
-        }
-      });
+    const getParticipantsCount = await courseBookingRepository
+      .createQueryBuilder('booking')
+      .select('booking.course_id', 'course_id')
+      .addSelect('COUNT(*)', 'count')
+      .where('booking.course_id IN (:...courseIds)', { courseIds: courses.map(course => course.id) })
+      .andWhere('booking.cancelled_at IS NULL')
+      .groupBy('booking.course_id')
+      .getRawMany();
 
-    const courseData = await Promise.all(courses.map(async (course) => ({
+    const participants = Object.fromEntries(getParticipantsCount.map(row => [row.course_id, Number(row.count)]));
+
+    const courseData = courses.map((course) => ({
       id: course.id,
       name: course.name,
       status: getCourseStatus(course.start_at, course.end_at),
@@ -39,8 +42,8 @@ module.exports = {
       end_at: course.end_at,
       max_participants: course.max_participants,
       meeting_url: course.meeting_url,
-      participants: await getParticipants(course.id)
-    })))
+      participants: participants[course.id] ?? 0
+    }))
 
     res.status(200).json({
       status: "success",
